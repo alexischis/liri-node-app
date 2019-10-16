@@ -1,15 +1,19 @@
 require("dotenv").config();
 
+// variables, using the reqiure command to call things from other files
 var keys = require("./keys.js");
 var Spotify = require('node-spotify-api');
 var spotify = new Spotify(keys.spotify);
 var request = require("request");
 var fs = require("fs");
+// user can choose a command, either concert-this, spotify-this-song, movie-tihs, do-what-it-says
 var userChoice = process.argv[2];
+// after the user types their choice of command they will type in their input that will be input to the appropriate API
 var inputs = process.argv[3];
 
 userInputs(userChoice, inputs);
 
+// validating userChoice and attributing the correct function with the input
 function userInputs(userChoice, inputs) {
     switch (userChoice) {
         case 'concert-this':
@@ -25,10 +29,12 @@ function userInputs(userChoice, inputs) {
             showSomeInfo();
             break;
         default:
+            // error message, userChoice validation
             console.log("Invalid Option. Please type any of the following options: \nconcert-this \nspotify-this-song \nmovie-this \ndo-what-it-says")
     }
 }
 
+// concert function; user inputs artist name to find concerts, it will print as many as the API can find
 function showConcertInfo(inputs) {
     var queryUrl = "https://rest.bandsintown.com/artists/" + inputs + "/events?app_id=codingbootcamp";
     request(queryUrl, function (error, response, body) {
@@ -48,8 +54,10 @@ function showConcertInfo(inputs) {
     });
 }
 
+// spotify function; user inputs song title or key word to find songs, it will print as many as the API can find
 function showSongInfo(inputs) {
     if (inputs === undefined) {
+        // The sign is the default if nothing is entered
         inputs = "The Sign";
     }
     spotify.search(
@@ -77,40 +85,28 @@ function showSongInfo(inputs) {
     );
 };
 
+// movie function; user inputs move name to find movie info, it will print as many as the API can find
 function showMovieInfo(inputs) {
     if (inputs === undefined) {
+        // Mr. Nobody is the default if nothing is found wtih a link to it's information and suggestion to watch on Netflix
         inputs = "Mr. Nobody"
         console.log("-----------------------");
-        fs.appendFileSync("log.txt", "-----------------------\n");
         console.log("If you haven't watched 'Mr. Nobody,' then you should: http://www.imdb.com/title/tt0485947/");
-        fs.appendFileSync("log.txt", "If you haven't watched 'Mr. Nobody,' then you should: http://www.imdb.com/title/tt0485947/" + "\n");
         console.log("It's on Netflix!");
-        fs.appendFileSync("log.txt", "It's on Netflix!\n");
     }
     var queryUrl = "http://www.omdbapi.com/?t=" + inputs + "&y=&plot=short&apikey=5ac16e77";
     request(queryUrl, function (error, response, body) {
         if (!error && response.statusCode === 200) {
             var movies = JSON.parse(body);
             console.log("--- Movie Info ---");
-            fs.appendFileSync("log.txt", "--- Movie Info ---\n");
             console.log("Title: " + movies.Title);
-            fs.appendFileSync("log.txt", "Title: " + movies.Title + "\n");
             console.log("Release Year: " + movies.Year);
-            fs.appendFileSync("log.txt", "Release Year: " + movies.Year + "\n");
             console.log("IMDB Rating: " + movies.imdbRating);
-            fs.appendFileSync("log.txt", "IMDB Rating: " + movies.imdbRating + "\n");
-            console.log("Rotten Tomatoes Rating: " + getRottenTomatoesRatingValue(movies));
-            fs.appendFileSync("log.txt", "Rotten Tomatoes Rating: " + getRottenTomatoesRatingValue(movies) + "\n");
             console.log("Country of Production: " + movies.Country);
-            fs.appendFileSync("log.txt", "Country of Production: " + movies.Country + "\n");
             console.log("Language: " + movies.Language);
-            fs.appendFileSync("log.txt", "Language: " + movies.Language + "\n");
             console.log("Plot: " + movies.Plot);
-            fs.appendFileSync("log.txt", "Plot: " + movies.Plot + "\n");
             console.log("Actors: " + movies.Actors);
-            fs.appendFileSync("log.txt", "Actors: " + movies.Actors + "\n");
             console.log("----------------------------");
-            fs.appendFileSync("log.txt", "----------------------------\n");
         } else {
             console.log('Error occurred.');
         }
@@ -118,17 +114,7 @@ function showMovieInfo(inputs) {
     });
 }
 
-//function to get proper Rotten Tomatoes Rating
-function getRottenTomatoesRatingObject(data) {
-    return data.Ratings.find(function (item) {
-        return item.Source === "Rotten Tomatoes";
-    });
-}
-
-function getRottenTomatoesRatingValue(data) {
-    return getRottenTomatoesRatingObject(data).Value;
-}
-
+// do what is says function; user inputs the command without an argument to see the output; this will call the spotify call in the random.txt
 function showSomeInfo() {
     fs.readFile('random.txt', 'utf8', function (err, data) {
         if (err) {
