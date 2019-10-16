@@ -58,7 +58,7 @@ function showConcertInfo(inputs) {
 function showSongInfo(inputs) {
     if (inputs === undefined) {
         // The sign is the default if nothing is entered
-        inputs = "The Sign";
+        inputs = "The+Sign";
     }
     spotify.search(
         {
